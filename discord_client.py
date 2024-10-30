@@ -11,31 +11,47 @@ async def create_discord_embed(activity: dict):
     traits = token.get('traits', {})
     price_micro = int(activity.get('price', 0))
     price = price_micro * 1e-6
-    price_usd = activity.get('priceUsd')
+    buyerAddr = activity.get('buyerAddr')
     token_id = token.get('tokenId')
     thumbnail = token.get('media', {}).get('visualAssets', {}).get('md', {}).get('url')
-    currency = '$STARS'
+    currency = 'STARS'
     nft_url = await get_token_url(COLLECTION_ADDRESS, token_id)
+    STARGAZE_ACCOUNT_URL = "https://www.stargaze.zone/p/"  # adjust this to your actual base URL
+    shortened_addr = f"{buyerAddr[:6]}...{buyerAddr[-3:]}"
+    buyer_link = f"[{shortened_addr}]({STARGAZE_ACCOUNT_URL}{buyerAddr}/tokens)"
+
+    description = ""
+    # Add rarity if it exists
+    if rarity:
+        description += f"**Rarity:** `{str(rarity)}`\n"
+    # Format price with thousand separator
+    formatted_value = "{:,}".format(int(price))
+    description += f"**Price:** `{formatted_value} {currency}`\n"
+    # Add buyer
+    description += f"**Buyer:** {buyer_link}"
 
     embed = discord.Embed(title=name,
+                          description=description,
                           url=nft_url,
                           color=DISCORD_EMBED_COLOR)
 
     embed.set_author(name="Sold on Stargaze", icon_url=STARGAZE_ICON_URL)
-    if rarity:
-        embed.add_field(name="Rarity", value="```" + str(rarity) + "```", inline=True)
-    formatted_value = "{:,}".format(int(price))
-    embed.add_field(name="Price", value="```" + formatted_value + " " + currency + "```", inline=True)
-    embed.add_field(name="USD Price", value=f"```${round(price_usd)} USD```", inline=True)
+
+    # if rarity:
+    #     embed.add_field(name="Rarity", value="```" + str(rarity) + "```", inline=False)
+    # formatted_value = "{:,}".format(int(price))
+    # embed.add_field(name="Price", value="```" + formatted_value + " " + currency + "```", inline=False)
+    # embed.add_field(name="Buyer", value=buyer_link, inline=False)
+    
 
     # Handle optional attributes data
-    text = ""
-    sorted_attributes = sorted(traits, key=lambda x: x["name"])
-    for attribute in sorted_attributes:
-        if 'name' in attribute and 'value' in attribute:
-            text = text + f"**⦁ {attribute['name']}:** {attribute['value']}\n"
-    if len(text) > 0:
-        embed.add_field(name="Traits", value=text, inline=False)
+    # text = ""
+    # sorted_attributes = sorted(traits, key=lambda x: x["name"])
+    # for attribute in sorted_attributes:
+    #     if 'name' in attribute and 'value' in attribute:
+    #         text = text + f"**⦁ {attribute['name']}:** {attribute['value']}\n"
+    # if len(text) > 0:
+    #     embed.add_field(name="Traits", value=text, inline=False)
 
     embed.set_image(url=thumbnail)
     activity_date = activity.get('date')
@@ -43,8 +59,8 @@ async def create_discord_embed(activity: dict):
         activity_timestamp = datetime.strptime(activity_date, '%Y-%m-%dT%H:%M:%S.%fZ')
         activity_timestamp = activity_timestamp.replace(tzinfo=timezone.utc)
         embed.timestamp = activity_timestamp
-    embed.set_footer(text="@LibreBots",
-                     icon_url="https://pbs.twimg.com/profile_images/1841774136009297920/rNoWg-9A_400x400.jpg")
+    embed.set_footer(text="@Steamland",
+                     icon_url="https://pbs.twimg.com/profile_images/1690381994356768768/oLGVaGnb_400x400.jpg")
     return embed
 
 
