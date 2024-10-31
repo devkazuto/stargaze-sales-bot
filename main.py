@@ -65,14 +65,14 @@ async def process_event_loop():
                     activity_date = activity.get('date', 0)
                     activity_timestamp = datetime.strptime(activity_date, '%Y-%m-%dT%H:%M:%S.%fZ')
                     activity_timestamp = activity_timestamp.replace(tzinfo=timezone.utc)
-                    if activity_timestamp > last_time_stamp:
-                        with open(TIMESTAMP_FILE, 'w') as file:
-                            last_time_stamp = activity_timestamp
-                            file.write(str(last_time_stamp))
+                    # if activity_timestamp > last_time_stamp:
+                    with open(TIMESTAMP_FILE, 'w') as file:
+                        last_time_stamp = activity_timestamp
+                        file.write(str(last_time_stamp))
 
-                        # Send a discord notification for each activity
-                        activity_embed = await create_discord_embed(activity)
-                        await discord_client.send_message(activity_embed)
+                    # Send a discord notification for each activity
+                    activity_embed = await create_discord_embed(activity)
+                    await discord_client.send_message(activity_embed)
         except Exception as e:
             logging.error(f"Error checking activities: {e}")
             pass
