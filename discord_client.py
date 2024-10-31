@@ -3,6 +3,10 @@ from discord import SyncWebhook
 from datetime import datetime, timezone
 from constants import DISCORD_EMBED_COLOR, STARGAZE_ICON_URL, STARGAZE_NFT_URL, COLLECTION_ADDRESS, DISCORD_WEBHOOK
 
+def shorten_address(address):
+    if not address:  # Handles None or empty string
+        return "-"
+    return f"{address[:6]}...{address[-3:]}"
 
 async def create_discord_embed(activity: dict):
     token = activity.get('token', {})
@@ -17,7 +21,7 @@ async def create_discord_embed(activity: dict):
     currency = 'STARS'
     nft_url = await get_token_url(COLLECTION_ADDRESS, token_id)
     STARGAZE_ACCOUNT_URL = "https://www.stargaze.zone/p/"  # adjust this to your actual base URL
-    shortened_addr = f"{buyerAddr[:6]}...{buyerAddr[-3:]}"
+    shortened_addr = shorten_address(buyerAddr)
     buyer_link = f"[{shortened_addr}]({STARGAZE_ACCOUNT_URL}{buyerAddr}/tokens)"
 
     description = ""
