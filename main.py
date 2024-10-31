@@ -61,18 +61,29 @@ async def process_event_loop():
 
             if result:
                 activities = result.get('tokenSales', {}).get('tokenSales', {})
+                newest_timestamp = last_time_stamp  # Inisialisasi timestamp terbaru
+                
+                # Proses semua aktivitas yang lebih baru dari last_time_stamp
                 for activity in activities:
                     activity_date = activity.get('date', 0)
                     activity_timestamp = datetime.strptime(activity_date, '%Y-%m-%dT%H:%M:%S.%fZ')
                     activity_timestamp = activity_timestamp.replace(tzinfo=timezone.utc)
-                    # if activity_timestamp > last_time_stamp:
+                    
+                    if activity_timestamp > last_time_stamp:
+                        # Kirim notifikasi Discord untuk setiap aktivitas yang valid
+                        activity_embed = await create_discord_embed(activity)
+                        # print(f"activity: {activity}")
+                        await discord_client.send_message(activity_embed)
+                        
+                        # Update newest_timestamp jika menemukan timestamp yang lebih baru
+                        if activity_timestamp > newest_timestamp:
+                            newest_timestamp = activity_timestamp
+                
+                # Update file timestamp hanya sekali setelah semua aktivitas diproses
+                if newest_timestamp > last_time_stamp:
                     with open(TIMESTAMP_FILE, 'w') as file:
-                        last_time_stamp = activity_timestamp
-                        file.write(str(last_time_stamp))
-
-                    # Send a discord notification for each activity
-                    activity_embed = await create_discord_embed(activity)
-                    await discord_client.send_message(activity_embed)
+                        file.write(str(newest_timestamp))
+                        
         except Exception as e:
             logging.error(f"Error checking activities: {e}")
             pass
